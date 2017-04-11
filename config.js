@@ -3,6 +3,6 @@
  */
 
 module.exports = {
-    port: 3002,
+    port: 80,
     localPath: 'D:/cdn/branch'
 };
