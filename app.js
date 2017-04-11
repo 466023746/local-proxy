@@ -47,7 +47,7 @@ var httpServer = http.createServer(function (req, res) {
             var pathArr = tmpPath.split(',');
 
             pathArr.forEach(function (item, index) {
-                var totalPath = path.resolve(localPath, prefix, fileType == 'js' ? 'js' :
+                var totalPath = path.join(localPath, prefix, fileType == 'js' ? 'js' :
                     fileType == 'css' ? 'css' : fileType == 'img' ? 'images' :
                         'css', item);
 
@@ -173,7 +173,7 @@ var httpsServer = https.createServer(sslOptions, function (req, res) {
             var pathArr = tmpPath.split(',');
 
             pathArr.forEach(function (item, index) {
-                var totalPath = path.resolve(localPath, prefix, fileType == 'js' ? 'js' :
+                var totalPath = path.join(localPath, prefix, fileType == 'js' ? 'js' :
                     fileType == 'css' ? 'css' : fileType == 'img' ? 'images' :
                         'css', item);
 
