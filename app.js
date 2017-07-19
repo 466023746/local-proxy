@@ -37,6 +37,10 @@ var httpServer = http.createServer(function (req, res) {
             headers: req.headers
         };
 
+        if (!filterRequest(requestUrl, res)) {
+            return
+        }
+
         if (tmpPath) {
             console.log('reverse proxy request', requestUrl);
 
@@ -163,6 +167,10 @@ var httpsServer = https.createServer(sslOptions, function (req, res) {
             headers: req.headers
         };
 
+        if (!filterRequest(requestUrl, res)) {
+            return
+        }
+
         if (tmpPath) {
             console.log('https reverse proxy request', requestUrl);
 
@@ -283,6 +291,7 @@ function _request(options, body, cb, isHttps) {
 
     req.on('error', function (err) {
         console.log('request error', err);
+        if (err.message == 'socket hang up') req.abort();
         cb(err, null, req);
     });
 
@@ -298,11 +307,13 @@ function regValidate(requestUrl) {
         jsReg3 = /\/mj\/\d+\//,
         jsReg4 = /\/site\/m2015\/js\//;
     var cssReg1 = /\.\w+\/s\/\d+\/.+\.css/,
-        cssReg2 = /\/ms\/\d+\/.+\.css/;
+        cssReg2 = /\/ms\/\d+\/.+\.css/,
+        cssReg3 = /\/site\/css\/.+\.css/;
     var imgReg1 = /\.\w+\/img\/\d+\//,
         imgReg2 = /\/site\/images\//,
         imgReg3 = /\/site\/m2015\/images\//;
-    var fontReg1 = /\/s\/\d+\/.+\.(woff|ttf|eot|otf)/;
+    var fontReg1 = /\/s\/\d+\/.+\.(woff|ttf|eot|otf)/,
+        fontReg2 = /\/site\/css\/.+\.(woff|ttf|eot|otf)/;
     var fileType, tmpPath, tmpHeader, prefix = '';
 
     if (jsReg1.test(requestUrl)) {
@@ -350,6 +361,13 @@ function regValidate(requestUrl) {
             'Access-Control-Allow-Origin': '*'
         };
         prefix = 'm2015';
+    } else if (cssReg3.test(requestUrl)) {
+        fileType = 'css';
+        tmpPath = requestUrl.replace(/.*\/site\/css\//, '');
+        tmpHeader = {
+            'Content-Type': 'text/css; charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+        };
     } else if (imgReg1.test(requestUrl)) {
         fileType = 'img';
         tmpPath = requestUrl.replace(/.*\/\d+\//, '');
@@ -379,6 +397,13 @@ function regValidate(requestUrl) {
             'Content-Type': 'text/plain; charset=utf-8',
             'Access-Control-Allow-Origin': '*'
         };
+    } else if (fontReg2.test(requestUrl)) {
+        fileType = 'font';
+        tmpPath = requestUrl.replace(/.*\/site\/css\//, '');
+        tmpHeader = {
+            'Content-Type': 'text/plain; charset=utf-8',
+            'Access-Control-Allow-Origin': '*'
+        };
     }
 
     return {fileType, tmpPath, tmpHeader, prefix}
@@ -396,6 +421,16 @@ function getImageContentType(url) {
     } else if (url.match(/\.tiff/)) {
         return 'image/tiff'
     }
+}
+
+function filterRequest(requestUrl, res) {
+    if (requestUrl.indexOf('/msdownload/') != -1) {
+        console.log('filter request', requestUrl);
+        res.writeHead(403);
+        res.end();
+        return false
+    }
+    return true
 }
 
 process.on('uncaughtException', function (err) {
