@@ -9,6 +9,7 @@ var url = require('url');
 var zlib = require('zlib');
 var net = require('net');
 var https = require('https');
+var dns = require('dns');
 
 var config = require('./config');
 var port = config.port,
@@ -280,13 +281,22 @@ function _request(options, body, cb, isHttps) {
             //         break;
             // }
 
-            cb(null, buffer, res);
+            handleResult(null, buffer, res);
         });
 
         res.on('error', function (err) {
             console.log('response error', err);
-            cb(err, null, res);
-        })
+            handleResult(err, null, res);
+        });
+
+        function handleResult(err, data, res) {
+            dns.lookup(options.host, function (err, address, family) {
+                var header = res.headers || (res.headers = {});
+
+                header['X-Resource-Ip'] = address;
+                cb(err, data, res);
+            })
+        }
     });
 
     req.on('error', function (err) {
