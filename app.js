@@ -288,27 +288,28 @@ function _request(options, body, cb, isHttps) {
             console.log('response error', err);
             handleResult(err, null, res);
         });
-
-        function handleResult(err, data, res) {
-            dns.lookup(options.host, function (err, address, family) {
-                var header = res.headers || (res.headers = {});
-
-                header['X-Resource-Ip'] = address;
-                cb(err, data, res);
-            })
-        }
     });
 
     req.on('error', function (err) {
         console.log('request error', err);
         if (err.message == 'socket hang up') req.abort();
-        cb(err, null, req);
+        handleResult(err, null, req);
     });
 
     if (body) {
         req.write(body);
     }
     req.end();
+
+    function handleResult(err, data, res) {
+        dns.lookup(options.host, function (err2, address, family) {
+            var header = res.headers || (res.headers = {});
+
+            header['X-Resource-Ip'] = address || '';
+            if (err) header['X-Resource-Error'] = err.message;
+            cb(err, data, res);
+        })
+    }
 }
 
 function regValidate(requestUrl) {
