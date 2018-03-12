@@ -334,7 +334,9 @@ async function regValidate(requestUrl) {
 }
 
 function mimeType(url) {
-    if (url.match(/\.js/)) {
+    if (url.match(/\.html/)) {
+        return 'text/html;charset=UTF-8'
+    } else if (url.match(/\.js/)) {
         return 'application/javascript; charset=utf-8'
     } else if (url.match(/\.css/)) {
         return 'text/css; charset=utf-8'
