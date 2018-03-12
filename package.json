@@ -1,0 +1,22 @@
+{
+  "name": "node-proxy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/466023746/node-proxy.git"
+  },
+  "author": "challenget",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/466023746/node-proxy/issues"
+  },
+  "homepage": "https://github.com/466023746/node-proxy#readme",
+  "dependencies": {
+    "minimatch": "^3.0.4"
+  }
+}

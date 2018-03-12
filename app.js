@@ -10,10 +10,11 @@ var zlib = require('zlib');
 var net = require('net');
 var https = require('https');
 var dns = require('dns');
+var minimatch = require('minimatch')
 
 var config = require('./config');
-var port = config.port,
-    localPath = config.localPath;
+var port = config.port || 3000
+var httpsPort = config.httpsPort || 3001
 
 var httpServer = http.createServer(function (req, res) {
     var reqChunk = [], reqChunkLen = 0;
@@ -23,11 +24,11 @@ var httpServer = http.createServer(function (req, res) {
         reqChunkLen += chunk.length;
     });
 
-    req.on('end', function () {
+    req.on('end', async function () {
 
         var body = Buffer.concat(reqChunk, reqChunkLen);
         var requestUrl = req.url;
-        var {tmpPath, tmpHeader, fileType, prefix} = regValidate(requestUrl);
+        var {tmpPath, tmpHeader, fileType} = await regValidate(requestUrl);
 
         var urlObj = url.parse(requestUrl);
         var options = {
@@ -52,9 +53,7 @@ var httpServer = http.createServer(function (req, res) {
             var pathArr = tmpPath.split(',');
 
             pathArr.forEach(function (item, index) {
-                var totalPath = path.join(localPath, prefix, fileType == 'js' ? 'js' :
-                    fileType == 'css' ? 'css' : fileType == 'img' ? 'images' :
-                        'css', item);
+                var totalPath = item;
 
                 fs.readFile(totalPath, function (err, data) {
                     if (err) {
@@ -153,11 +152,11 @@ var httpsServer = https.createServer(sslOptions, function (req, res) {
         reqChunkLen += chunk.length;
     });
 
-    req.on('end', function () {
+    req.on('end', async function () {
 
         var body = Buffer.concat(reqChunk, reqChunkLen);
         var requestUrl = 'https://' + req.headers['host'] + req.url;
-        var {tmpPath, tmpHeader, fileType, prefix} = regValidate(requestUrl);
+        var {tmpPath, tmpHeader, fileType} = await regValidate(requestUrl);
 
         var urlObj = url.parse(requestUrl);
         var options = {
@@ -182,9 +181,7 @@ var httpsServer = https.createServer(sslOptions, function (req, res) {
             var pathArr = tmpPath.split(',');
 
             pathArr.forEach(function (item, index) {
-                var totalPath = path.join(localPath, prefix, fileType == 'js' ? 'js' :
-                    fileType == 'css' ? 'css' : fileType == 'img' ? 'images' :
-                        'css', item);
+                var totalPath = item;
 
                 fs.readFile(totalPath, function (err, data) {
                     if (err) {
@@ -312,116 +309,38 @@ function _request(options, body, cb, isHttps) {
     }
 }
 
-function regValidate(requestUrl) {
-    var jsReg1 = /\.\w+\/j\/\d+\//,
-        jsReg2 = /\/site\/js\//,
-        jsReg3 = /\/mj\/\d+\//,
-        jsReg4 = /\/site\/m2015\/js\//;
-    var cssReg1 = /\.\w+\/s\/\d+\/.+\.css/,
-        cssReg2 = /\/ms\/\d+\/.+\.css/,
-        cssReg3 = /\/site\/css\/.+\.css/;
-    var imgReg1 = /\.\w+\/img\/\d+\//,
-        imgReg2 = /\/site\/images\//,
-        imgReg3 = /\/site\/m2015\/images\//;
-    var fontReg1 = /\/s\/\d+\/.+\.(woff|ttf|eot|otf)/,
-        fontReg2 = /\/site\/css\/.+\.(woff|ttf|eot|otf)/;
-    var fileType, tmpPath, tmpHeader, prefix = '';
+async function regValidate(requestUrl) {
+    var tmpPath, tmpHeader, fileType
+    var rules = config.rules
 
-    if (jsReg1.test(requestUrl)) {
-        fileType = 'js';
-        tmpPath = requestUrl.replace(/.*\/\d+\//, '');
-        tmpHeader = {
-            'Content-Type': 'application/javascript; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
-    } else if (jsReg2.test(requestUrl)) {
-        fileType = 'js';
-        tmpPath = requestUrl.replace(/.*\/site\/js\//, '');
-        tmpHeader = {
-            'Content-Type': 'application/javascript; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
-    } else if (jsReg3.test(requestUrl)) {
-        fileType = 'js';
-        tmpPath = requestUrl.replace(/.*\/mj\/\d+\//, '');
-        tmpHeader = {
-            'Content-Type': 'application/javascript; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
-        prefix = 'm2015';
-    } else if (jsReg4.test(requestUrl)) {
-        fileType = 'js';
-        tmpPath = requestUrl.replace(/.*\/site\/m2015\/js\//, '');
-        tmpHeader = {
-            'Content-Type': 'application/javascript; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
-        prefix = 'm2015';
-    } else if (cssReg1.test(requestUrl)) {
-        fileType = 'css';
-        tmpPath = requestUrl.replace(/.*\/\d+\//, '');
-        tmpHeader = {
-            'Content-Type': 'text/css; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
-    } else if (cssReg2.test(requestUrl)) {
-        fileType = 'css';
-        tmpPath = requestUrl.replace(/.*\/\d+\//, '');
-        tmpHeader = {
-            'Content-Type': 'text/css; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
-        prefix = 'm2015';
-    } else if (cssReg3.test(requestUrl)) {
-        fileType = 'css';
-        tmpPath = requestUrl.replace(/.*\/site\/css\//, '');
-        tmpHeader = {
-            'Content-Type': 'text/css; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
-    } else if (imgReg1.test(requestUrl)) {
-        fileType = 'img';
-        tmpPath = requestUrl.replace(/.*\/\d+\//, '');
-        tmpHeader = {
-            'Content-Type': getImageContentType(requestUrl),
-            'Access-Control-Allow-Origin': '*'
-        };
-    } else if (imgReg2.test(requestUrl)) {
-        fileType = 'img';
-        tmpPath = requestUrl.replace(/.*\/site\/images\//, '');
-        tmpHeader = {
-            'Content-Type': getImageContentType(requestUrl),
-            'Access-Control-Allow-Origin': '*'
-        };
-    } else if (imgReg3.test(requestUrl)) {
-        fileType = 'img';
-        tmpPath = requestUrl.replace(/.*\/site\/m2015\/images\//, '');
-        tmpHeader = {
-            'Content-Type': getImageContentType(requestUrl),
-            'Access-Control-Allow-Origin': '*'
-        };
-        prefix = 'm2015';
-    } else if (fontReg1.test(requestUrl)) {
-        fileType = 'font';
-        tmpPath = requestUrl.replace(/.*\/\d+\//, '');
-        tmpHeader = {
-            'Content-Type': 'text/plain; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
-    } else if (fontReg2.test(requestUrl)) {
-        fileType = 'font';
-        tmpPath = requestUrl.replace(/.*\/site\/css\//, '');
-        tmpHeader = {
-            'Content-Type': 'text/plain; charset=utf-8',
-            'Access-Control-Allow-Origin': '*'
-        };
+    for (var options of rules) {
+        var rule = options['test']
+        var func = options['fn']
+        if (typeof rule == 'string') {
+            rule = minimatch.makeRe(rule)
+        }
+        if (rule.test(requestUrl)) {
+            tmpPath = await func.call(config, requestUrl)
+            tmpHeader = {
+                'Content-Type': mimeType(tmpPath),
+                'Access-Control-Allow-Origin': '*'
+            }
+            fileType = path.extname(tmpPath).substr(1)
+            break
+        }
     }
 
-    return {fileType, tmpPath, tmpHeader, prefix}
+    return {tmpPath, tmpHeader, fileType}
 }
 
-function getImageContentType(url) {
-    if (url.match(/\.png/)) {
+function mimeType(url) {
+    if (url.match(/\.js/)) {
+        return 'application/javascript; charset=utf-8'
+    } else if (url.match(/\.css/)) {
+        return 'text/css; charset=utf-8'
+    } else if (url.match(/\.(woff|ttf|eot|otf)/)) {
+        return 'text/plain'
+    } else if (url.match(/\.png/)) {
         return 'image/png'
     } else if (url.match(/\.(jpg|jpeg)/)) {
         return 'image/jpeg'
@@ -452,6 +371,6 @@ httpServer.listen(port, function () {
     console.log('http server listen on %d', port)
 });
 
-httpsServer.listen(443, function () {
-    console.log('https server listen on %d', 443)
+httpsServer.listen(httpsPort, function () {
+    console.log('https server listen on %d', httpsPort)
 });
