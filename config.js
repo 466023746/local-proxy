@@ -8,6 +8,10 @@ const fs = require('fs')
 const localPath = '/Users/challenget/Documents/kaola-community-web/src/main/resources/web/dist/'
 
 module.exports = {
+    // http server port, default 3000
+    // port: '',
+    // https server port, default 3001
+    // httpsPort: '',
     rules: [
         {
             // http://community.kaola.com/web/js/app.96b82519fcfa4ace1c7e.js
