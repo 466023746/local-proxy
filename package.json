@@ -1,21 +1,20 @@
 {
-  "name": "node-proxy",
+  "name": "local-proxy",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/466023746/node-proxy.git"
+    "url": "git+https://github.com/466023746/local-proxy.git"
   },
   "author": "challenget",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/466023746/node-proxy/issues"
+    "url": "https://github.com/466023746/local-proxy/issues"
   },
-  "homepage": "https://github.com/466023746/node-proxy#readme",
+  "homepage": "https://github.com/466023746/local-proxy#readme",
   "dependencies": {
     "minimatch": "^3.0.4"
   }
