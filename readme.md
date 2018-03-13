@@ -1,15 +1,15 @@
-# local-proxy
-proxy static file to local
+# proxy-local
+proxy static file to local, nonmatched url will through the proxy
 
 # Installation
 ```bash
-npm i local-proxy --save-dev
+npm i proxy-local --save-dev
 ```
 
 # Usage
 1、start your server
 ```js
-const localProxy = require('local-proxy')
+const localProxy = require('proxy-local')
 
 const httpRules = [
   {
