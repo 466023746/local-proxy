@@ -19,13 +19,17 @@ var config = {
     https: {}
 };
 
-exports.httpServer = require('./httpServer')(setConfig)
+exports.httpServer = require('./httpServer')(setConfig, getConfig)
 
-exports.httpsServer = require('./httpsServer')(setConfig)
+exports.httpsServer = require('./httpsServer')(setConfig, getConfig)
 
 function setConfig(options) {
     options = options || {};
     Object.assign(config, options);
+};
+
+function getConfig() {
+    return config
 };
 
 process.on('uncaughtException', function (err) {

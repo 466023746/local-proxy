@@ -34,6 +34,7 @@ class httpServer {
 
         setConf({
             http: {
+                port: this.port,
                 autoSetProxy: this.autoSetProxy
             }
         });

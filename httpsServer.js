@@ -7,10 +7,11 @@ var regValidate = require('./regValidate')
 var filterRequest = require('./filterRequest')
 var {setBrowserProxy} = require('set-browser-proxy');
 
-var setConf;
+var setConf, getConf;
 
-module.exports = function (setConfig) {
+module.exports = function (setConfig, getConfig) {
     setConf = setConfig;
+    getConf = getConfig;
     return httpsServer
 }
 
@@ -152,12 +153,17 @@ class httpsServer {
         httpsServer.listen(this.port, function () {
             console.log('https server listen on %d', self.port)
             if (self.autoSetProxy) {
-                setBrowserProxy({
-                    https: {
-                        host: '127.0.0.1',
-                        port: self.port
-                    }
-                })
+                var conf = getConf();
+                var httpPort = conf.http.port;
+
+                if (httpPort) {
+                    setBrowserProxy({
+                        https: {
+                            host: '127.0.0.1',
+                            port: httpPort
+                        }
+                    })
+                }
             }
         });
     }
