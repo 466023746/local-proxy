@@ -41,7 +41,7 @@ httpServer.start()
 httpsServer.start()
 ```
 2、setup your browser proxy
-- auto, support an option for auto set proxy
+- auto, support an option for auto set proxy, see [set-browser-proxy](https://www.npmjs.com/package/set-browser-proxy)
 ```js
 const httpOptions = {
   autoSetProxy: true
