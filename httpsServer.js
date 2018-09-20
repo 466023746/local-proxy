@@ -5,8 +5,16 @@ var https = require('https');
 var request = require('./request')
 var regValidate = require('./regValidate')
 var filterRequest = require('./filterRequest')
+var {setBrowserProxy} = require('set-browser-proxy');
 
-module.exports = class httpsServer {
+var setConf;
+
+module.exports = function (setConfig) {
+    setConf = setConfig;
+    return httpsServer
+}
+
+class httpsServer {
     constructor(options) {
         this.options = options || {}
         this.sslOptions = {
@@ -19,10 +27,17 @@ module.exports = class httpsServer {
     normalize() {
         this.port = this.options.port || 3001
         this.rules = this.options.rules || []
+        this.autoSetProxy = this.options.autoSetProxy
     }
 
     start() {
         var self = this
+
+        setConf({
+            https: {
+                autoSetProxy: this.autoSetProxy
+            }
+        });
 
         var httpsServer = https.createServer(this.sslOptions, function (req, res) {
             var reqChunk = [], reqChunkLen = 0;
@@ -136,6 +151,14 @@ module.exports = class httpsServer {
 
         httpsServer.listen(this.port, function () {
             console.log('https server listen on %d', self.port)
+            if (self.autoSetProxy) {
+                setBrowserProxy({
+                    https: {
+                        host: '127.0.0.1',
+                        port: self.port
+                    }
+                })
+            }
         });
     }
 }

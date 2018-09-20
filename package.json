@@ -1,21 +1,21 @@
 {
   "name": "proxy-local",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "app.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/466023746/local-proxy.git"
+    "url": "git+https://github.com/466023746/proxy-local.git"
   },
   "author": "challenget",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/466023746/local-proxy/issues"
+    "url": "https://github.com/466023746/proxy-local/issues"
   },
-  "homepage": "https://github.com/466023746/local-proxy#readme",
+  "homepage": "https://github.com/466023746/proxy-local#readme",
   "dependencies": {
-    "minimatch": "^3.0.4"
+    "minimatch": "^3.0.4",
+    "set-browser-proxy": "^1.0.2"
   }
 }

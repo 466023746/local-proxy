@@ -41,8 +41,19 @@ httpServer.start()
 httpsServer.start()
 ```
 2、setup your browser proxy
-- http proxy port => httpOptions port
-- https proxy port => httpOptions port ( https should go the http server )
+- auto, support an option for auto set proxy
+```js
+const httpOptions = {
+  autoSetProxy: true
+}
+
+const httpsOptions = {
+    autoSetProxy: true
+}
+```
+- manual, change your browser proxy by yourself
+    - http proxy port => httpOptions port
+    - https proxy port => httpOptions port ( https should go the http server )
 
 # Note
 if you need https local proxy, you also need to open chrome with ignore-certificate-error args

@@ -12,12 +12,32 @@ var https = require('https');
 var request = require('./request')
 var regValidate = require('./regValidate')
 var filterRequest = require('./filterRequest')
+var {closeBrowserProxy} = require('set-browser-proxy')
 
-exports.httpServer = require('./httpServer')
+var config = {
+    http: {},
+    https: {}
+};
 
-exports.httpsServer = require('./httpsServer')
+exports.httpServer = require('./httpServer')(setConfig)
+
+exports.httpsServer = require('./httpsServer')(setConfig)
+
+function setConfig(options) {
+    options = options || {};
+    Object.assign(config, options);
+};
 
 process.on('uncaughtException', function (err) {
     console.log('process error', err);
+});
+
+process.on('SIGINT', function () {
+    var param = {};
+    if (!config.http.autoSetProxy) param.http = false;
+    if (!config.https.autoSetProxy) param.https = false;
+    closeBrowserProxy(param).then(function () {
+        process.exit();
+    })
 });
 

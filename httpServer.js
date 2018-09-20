@@ -6,8 +6,17 @@ var net = require('net');
 var request = require('./request')
 var regValidate = require('./regValidate')
 var filterRequest = require('./filterRequest')
+var {setBrowserProxy} = require('set-browser-proxy');
 
-module.exports = class httpServer {
+var setConf;
+
+module.exports = function (setConfig) {
+    setConf = setConfig;
+    return httpServer
+};
+
+
+class httpServer {
     constructor(options) {
         this.options = options || {}
         this.normalize()
@@ -17,10 +26,17 @@ module.exports = class httpServer {
         this.port = this.options.port || 3000
         this.httpsPort = this.options.httpsPort || 3001
         this.rules = this.options.rules || []
+        this.autoSetProxy = this.options.autoSetProxy;
     }
 
     start() {
         var self = this
+
+        setConf({
+            http: {
+                autoSetProxy: this.autoSetProxy
+            }
+        });
 
         var httpServer = http.createServer(function (req, res) {
             var reqChunk = [], reqChunkLen = 0;
@@ -147,7 +163,15 @@ module.exports = class httpServer {
         });
 
         httpServer.listen(this.port, function () {
-            console.log('http server listen on %d', self.port)
+            console.log('http server listen on %d', self.port);
+            if (self.autoSetProxy) {
+                setBrowserProxy({
+                    http: {
+                        host: '127.0.0.1',
+                        port: self.port
+                    }
+                })
+            }
         });
     }
 }
